@@ -1,5 +1,21 @@
+import {
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  EyeOff,
+  Layers,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useStudio } from "../state/store";
 
+/**
+ * Layers panel — Figma-style layer list. Rows are 26px+ lanes (the kit's
+ * row height): eye toggle, name, and reorder/delete controls in one line,
+ * opacity on its own line beneath. The active layer is lifted: accent
+ * tint + accent ring, the way a picked-up card reads in freeform-drag.
+ * All dispatches are unchanged from the original panel.
+ */
 export default function LayersPanel() {
   const { state, dispatch } = useStudio();
 
@@ -7,36 +23,45 @@ export default function LayersPanel() {
   const displayLayers = [...state.layers].reverse();
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-l border-gray-700 bg-gray-900 text-gray-100">
-      <div className="flex items-center justify-between border-b border-gray-700 px-3 py-2">
-        <h2 className="text-sm font-semibold tracking-wide">Layers</h2>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex shrink-0 items-center justify-between border-b border-line px-[13px] py-[8px]">
+        <h2 className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-ink-soft uppercase">
+          <Layers size={13} strokeWidth={1.8} />
+          Layers
+          <span className="rounded-full bg-neutral-100 px-1.5 py-px text-[11px] font-semibold text-ink-soft tabular-nums">
+            {state.layers.length}
+          </span>
+        </h2>
         <button
           type="button"
           onClick={() => dispatch({ type: "ADD_LAYER" })}
-          className="rounded-md bg-indigo-600 px-2 py-1 text-xs font-medium hover:bg-indigo-500"
+          className="flex h-[26px] items-center gap-1 rounded-md bg-accent px-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent-hover"
         >
-          + Add layer
+          <Plus size={13} strokeWidth={2} />
+          Add
         </button>
       </div>
 
-      <ul className="flex-1 overflow-y-auto p-2">
+      <ul className="min-h-0 flex-1 overflow-y-auto p-[8px]">
         {displayLayers.map((layer, displayIndex) => {
           const isActive = layer.id === state.activeLayerId;
           const isTop = displayIndex === 0;
           const isBottom = displayIndex === displayLayers.length - 1;
+          const rowBtn =
+            "flex h-[22px] w-[22px] items-center justify-center rounded text-ink-faint transition-colors hover:bg-neutral-100 hover:text-ink disabled:opacity-25 disabled:hover:bg-transparent";
           return (
             <li
               key={layer.id}
               onClick={() =>
                 dispatch({ type: "SET_ACTIVE_LAYER", id: layer.id })
               }
-              className={`mb-1 cursor-pointer rounded-md border px-2 py-2 ${
+              className={`mb-[5px] cursor-pointer rounded-lg border px-2 py-[8px] transition-all duration-150 ${
                 isActive
-                  ? "border-indigo-500 bg-indigo-600/20"
-                  : "border-gray-700 bg-gray-800 hover:bg-gray-700"
+                  ? "border-accent-ring bg-accent-soft shadow-sm"
+                  : "border-transparent bg-transparent hover:bg-neutral-50"
               }`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-[8px]">
                 <button
                   type="button"
                   title={layer.visible ? "Hide layer" : "Show layer"}
@@ -49,11 +74,19 @@ export default function LayersPanel() {
                       id: layer.id,
                     });
                   }}
-                  className="text-base leading-none"
+                  className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded text-ink-soft transition-colors hover:bg-neutral-100 hover:text-ink"
                 >
-                  {layer.visible ? "👁️" : "🚫"}
+                  {layer.visible ? (
+                    <Eye size={15} strokeWidth={1.8} />
+                  ) : (
+                    <EyeOff size={15} strokeWidth={1.8} />
+                  )}
                 </button>
-                <span className="flex-1 truncate text-sm font-medium">
+                <span
+                  className={`min-w-0 flex-1 truncate text-[13px] ${
+                    isActive ? "font-semibold text-ink" : "font-medium text-ink-soft"
+                  }`}
+                >
                   {layer.name}
                 </span>
                 <button
@@ -65,9 +98,9 @@ export default function LayersPanel() {
                     e.stopPropagation();
                     dispatch({ type: "MOVE_LAYER", id: layer.id, direction: "up" });
                   }}
-                  className="rounded px-1 text-gray-300 hover:bg-gray-600 disabled:opacity-30"
+                  className={rowBtn}
                 >
-                  ↑
+                  <ChevronUp size={15} strokeWidth={1.8} />
                 </button>
                 <button
                   type="button"
@@ -82,9 +115,9 @@ export default function LayersPanel() {
                       direction: "down",
                     });
                   }}
-                  className="rounded px-1 text-gray-300 hover:bg-gray-600 disabled:opacity-30"
+                  className={rowBtn}
                 >
-                  ↓
+                  <ChevronDown size={15} strokeWidth={1.8} />
                 </button>
                 <button
                   type="button"
@@ -95,13 +128,13 @@ export default function LayersPanel() {
                     e.stopPropagation();
                     dispatch({ type: "DELETE_LAYER", id: layer.id });
                   }}
-                  className="rounded px-1 text-red-400 hover:bg-gray-600 disabled:opacity-30"
+                  className={`${rowBtn} hover:text-danger`}
                 >
-                  ✕
+                  <Trash2 size={14} strokeWidth={1.8} />
                 </button>
               </div>
-              <label className="mt-1.5 flex items-center gap-2 text-xs text-gray-400">
-                Opacity
+              <label className="mt-[8px] flex items-center gap-[8px] pl-[30px] text-[11px] text-ink-faint">
+                <span className="shrink-0">Opacity</span>
                 <input
                   type="range"
                   min={0.05}
@@ -117,9 +150,9 @@ export default function LayersPanel() {
                       opacity: Number(e.target.value),
                     })
                   }
-                  className="flex-1"
+                  className="min-w-0 flex-1"
                 />
-                <span className="w-8 text-right">
+                <span className="w-[30px] shrink-0 text-right tabular-nums">
                   {Math.round(layer.opacity * 100)}%
                 </span>
               </label>
@@ -128,19 +161,13 @@ export default function LayersPanel() {
         })}
       </ul>
 
-      <div className="border-t border-gray-700 px-3 py-2 text-xs leading-relaxed text-gray-400">
+      <div className="shrink-0 border-t border-line px-[13px] py-[8px] text-[11px] leading-relaxed text-ink-faint">
         <p>
           {state.layers.length} layer{state.layers.length === 1 ? "" : "s"} ·{" "}
           {state.undoStack.length} undo step
           {state.undoStack.length === 1 ? "" : "s"} available
         </p>
-        <p className="mt-1">
-          {state.savedAt
-            ? `Autosaved ${new Date(state.savedAt).toLocaleTimeString()} — your drawing is stored in this browser.`
-            : "Your drawing autosaves to this browser as you work."}
-        </p>
-        <p className="mt-1">Shortcuts: Ctrl+Z undo · Ctrl+Shift+Z redo</p>
       </div>
-    </aside>
+    </div>
   );
 }

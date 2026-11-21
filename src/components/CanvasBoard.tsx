@@ -194,12 +194,14 @@ export default function CanvasBoard() {
     }
   }
 
+  const isBlank = layers.every((l) => !l.dataUrl);
+
   return (
-    <div className="flex-1 overflow-auto bg-gray-950 p-6">
+    <div className="relative min-w-0 flex-1 overflow-auto bg-ground p-[34px]">
       <div className="flex min-h-full items-center justify-center">
         <div
           ref={stackRef}
-          className="relative shrink-0 touch-none rounded-sm bg-white shadow-2xl ring-1 ring-gray-700 select-none"
+          className="relative shrink-0 touch-none rounded-[4px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.08)] ring-1 ring-black/5 select-none"
           style={{
             width: canvasSize.width * zoom,
             height: canvasSize.height * zoom,
@@ -236,12 +238,31 @@ export default function CanvasBoard() {
               className="pointer-events-none absolute top-0 left-0"
             />
           </div>
+          {/* Empty state — a quiet invitation, never in the way of drawing */}
+          {isBlank && activeLayer?.visible && (
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-[5px] text-center">
+              <p className="text-[21px] leading-tight font-semibold tracking-tight text-neutral-300">
+                Start drawing
+              </p>
+              <p className="text-[13px] text-neutral-400">
+                Pick a tool on the left and draw on the canvas
+              </p>
+            </div>
+          )}
           {!activeLayer?.visible && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-medium text-white">
-              The active layer is hidden — make it visible to draw on it.
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="rounded-full bg-neutral-900/85 px-3 py-1.5 text-[13px] font-medium text-white shadow-lg">
+                The active layer is hidden — make it visible to draw on it.
+              </p>
             </div>
           )}
         </div>
+      </div>
+      {/* Sheet readout — size and zoom, floating over the ground */}
+      <div className="pointer-events-none sticky bottom-0 left-0 z-10 -mt-7 flex">
+        <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-ink-soft tabular-nums shadow-sm ring-1 ring-black/5 backdrop-blur">
+          {canvasSize.width} × {canvasSize.height} · {Math.round(zoom * 100)}%
+        </span>
       </div>
     </div>
   );

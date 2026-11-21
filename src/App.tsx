@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import CanvasBoard from "./components/CanvasBoard";
 import LayersPanel from "./components/LayersPanel";
-import Toolbar from "./components/Toolbar";
+import PropertiesPanel from "./components/PropertiesPanel";
+import ToolRail from "./components/ToolRail";
+import TopBar from "./components/TopBar";
 import { AUTOSAVE_KEY, StudioProvider, useStudio } from "./state/store";
 
 function Autosave() {
@@ -60,22 +62,40 @@ function KeyboardShortcuts() {
   return null;
 }
 
+/** Slim status bar — autosave state on the left, shortcuts on the right. */
+function StatusBar() {
+  const { state } = useStudio();
+  return (
+    <footer className="flex h-7 shrink-0 items-center justify-between border-t border-line bg-surface px-[13px] text-[11px] text-ink-faint">
+      <span>
+        {state.savedAt
+          ? `Autosaved ${new Date(state.savedAt).toLocaleTimeString()} — your drawing is stored in this browser.`
+          : "Your drawing autosaves to this browser as you work."}
+      </span>
+      <span className="hidden sm:inline">
+        Ctrl+Z undo · Ctrl+Shift+Z redo
+      </span>
+    </footer>
+  );
+}
+
 export default function App() {
   return (
     <StudioProvider>
       <Autosave />
       <KeyboardShortcuts />
-      <div className="flex h-full flex-col bg-gray-950">
-        <Toolbar />
+      {/* Figma anatomy: top chrome, left tool rail, canvas hero, right pane */}
+      <div className="flex h-full flex-col bg-ground text-ink">
+        <TopBar />
         <div className="flex min-h-0 flex-1">
+          <ToolRail />
           <CanvasBoard />
-          <LayersPanel />
+          <aside className="flex w-[233px] shrink-0 flex-col overflow-y-auto border-l border-line bg-surface">
+            <PropertiesPanel />
+            <LayersPanel />
+          </aside>
         </div>
-        <footer className="border-t border-gray-700 bg-gray-900 px-4 py-1.5 text-center text-xs text-gray-400">
-          Canvas Studio — a browser drawing app. Brush, eraser, shapes and
-          fill on stacked layers, with undo/redo, autosave and PNG export.
-          Everything stays in your browser.
-        </footer>
+        <StatusBar />
       </div>
     </StudioProvider>
   );
