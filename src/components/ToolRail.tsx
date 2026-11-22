@@ -29,7 +29,7 @@ export default function ToolRail() {
 
   return (
     <nav
-      className="flex w-[55px] shrink-0 flex-col items-center gap-1 border-r border-line bg-surface py-[13px]"
+      className="flex w-full shrink-0 flex-row items-center gap-1 overflow-x-auto border-b border-line bg-surface px-2 py-2 sm:w-[55px] sm:flex-col sm:overflow-visible sm:border-r sm:border-b-0 sm:px-0 sm:py-[13px]"
       role="toolbar"
       aria-label="Drawing tools"
       aria-orientation="vertical"
@@ -45,7 +45,7 @@ export default function ToolRail() {
             aria-label={t.label}
             aria-pressed={isActive}
             onClick={() => dispatch({ type: "SET_TOOL", tool: t.id })}
-            className={`flex h-[34px] w-[34px] items-center justify-center rounded-lg transition-all duration-150 ${
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-all duration-150 sm:h-[34px] sm:w-[34px] ${
               isActive
                 ? "bg-accent text-accent-contrast shadow-sm"
                 : "text-ink-soft hover:bg-panel hover:text-ink"

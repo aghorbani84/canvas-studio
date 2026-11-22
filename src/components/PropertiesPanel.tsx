@@ -30,7 +30,7 @@ export default function PropertiesPanel() {
             onChange={(e) =>
               dispatch({ type: "SET_COLOR", color: e.target.value })
             }
-            className="cs-swatch h-[34px] w-[34px] shrink-0"
+            className="cs-swatch h-11 w-11 shrink-0 sm:h-[34px] sm:w-[34px]"
           />
           <span className="font-mono text-xs text-ink-soft uppercase">
             {state.color}
@@ -49,7 +49,7 @@ export default function PropertiesPanel() {
                 e.preventDefault();
                 dispatch({ type: "REMOVE_PALETTE_COLOR", color: c });
               }}
-              className={`h-5 w-5 rounded-md transition-transform duration-150 hover:scale-110 ${
+              className={`h-7 w-7 rounded-md transition-transform duration-150 hover:scale-110 sm:h-5 sm:w-5 ${
                 state.color === c
                   ? "ring-2 ring-accent ring-offset-1 ring-offset-surface"
                   : "ring-1 ring-black/10"
@@ -64,7 +64,7 @@ export default function PropertiesPanel() {
             onClick={() =>
               dispatch({ type: "ADD_PALETTE_COLOR", color: state.color })
             }
-            className="flex h-5 w-5 items-center justify-center rounded-md border border-dashed border-line-strong text-ink-faint transition-colors hover:border-accent hover:text-accent"
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-dashed border-line-strong text-ink-faint transition-colors hover:border-accent hover:text-accent sm:h-5 sm:w-5"
           >
             <Plus size={13} strokeWidth={1.8} />
           </button>
@@ -128,6 +128,85 @@ export default function PropertiesPanel() {
             aria-hidden="true"
           />
         </div>
+      </section>
+
+      {/* Presets — one-tap brush sizes and opacities */}
+      <section className="border-b border-line px-[13px] py-[13px]">
+        <SectionTitle>Presets</SectionTitle>
+        <div
+          className="mt-[13px] flex flex-wrap gap-[5px]"
+          role="group"
+          aria-label="Brush size presets"
+        >
+          {[2, 4, 8, 16, 32].map((size) => (
+            <button
+              key={size}
+              type="button"
+              aria-label={`Brush size ${size}px`}
+              aria-pressed={state.brushSize === size}
+              onClick={() => dispatch({ type: "SET_BRUSH_SIZE", size })}
+              className={`h-11 rounded-md px-2 text-xs font-medium tabular-nums transition-colors sm:h-[26px] ${
+                state.brushSize === size
+                  ? "bg-accent text-accent-contrast shadow-sm"
+                  : "bg-panel text-ink-soft hover:bg-line hover:text-ink"
+              }`}
+            >
+              {size}px
+            </button>
+          ))}
+        </div>
+        <div
+          className="mt-[8px] flex flex-wrap gap-[5px]"
+          role="group"
+          aria-label="Opacity presets"
+        >
+          {[0.25, 0.5, 0.75, 1].map((op) => (
+            <button
+              key={op}
+              type="button"
+              aria-label={`Opacity ${Math.round(op * 100)} percent`}
+              aria-pressed={state.opacity === op}
+              onClick={() => dispatch({ type: "SET_OPACITY", opacity: op })}
+              className={`h-11 rounded-md px-2 text-xs font-medium tabular-nums transition-colors sm:h-[26px] ${
+                state.opacity === op
+                  ? "bg-accent text-accent-contrast shadow-sm"
+                  : "bg-panel text-ink-soft hover:bg-line hover:text-ink"
+              }`}
+            >
+              {Math.round(op * 100)}%
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Document — live values, straight from the reducer state */}
+      <section className="border-b border-line px-[13px] py-[13px]">
+        <SectionTitle>Document</SectionTitle>
+        <dl className="mt-[8px] space-y-[5px] text-[13px]">
+          {(
+            [
+              ["Canvas", `${state.canvasSize.width} × ${state.canvasSize.height}`],
+              ["Zoom", `${Math.round(state.zoom * 100)}%`],
+              [
+                "Active layer",
+                state.layers.find((l) => l.id === state.activeLayerId)?.name ??
+                  "—",
+              ],
+              ["Tool", state.tool],
+              ["Strokes", String(state.strokeCount)],
+              ["Layers", String(state.layers.length)],
+              ["Unsaved changes", String(state.unsavedChanges)],
+              ["Undo / Redo", `${state.undoStack.length} / ${state.redoStack.length}`],
+            ] as Array<[string, string]>
+          ).map(([label, value]) => (
+            <div key={label} className="flex items-baseline justify-between gap-2">
+              <dt className="shrink-0 text-ink-soft">{label}</dt>
+              <dd className="min-w-0 truncate text-right font-medium text-ink tabular-nums">
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </section>
     </div>
   );

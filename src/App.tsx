@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import CanvasBoard from "./components/CanvasBoard";
+import InfoBar from "./components/InfoBar";
 import LayersPanel from "./components/LayersPanel";
 import PropertiesPanel from "./components/PropertiesPanel";
 import ToolRail from "./components/ToolRail";
@@ -68,12 +69,12 @@ function StatusBar() {
   const { state } = useStudio();
   return (
     <footer className="flex h-7 shrink-0 items-center justify-between border-t border-line bg-surface px-[13px] text-[11px] text-ink-faint">
-      <span>
+      <span className="min-w-0 truncate">
         {state.savedAt
           ? `Autosaved ${new Date(state.savedAt).toLocaleTimeString()} — your drawing is stored in this browser.`
           : "Your drawing autosaves to this browser as you work."}
       </span>
-      <span className="hidden sm:inline">
+      <span className="hidden shrink-0 sm:inline">
         Ctrl+Z undo · Ctrl+Shift+Z redo
       </span>
     </footer>
@@ -89,10 +90,11 @@ export default function App() {
         {/* Figma anatomy: top chrome, left tool rail, canvas hero, right pane */}
         <div className="flex h-full flex-col bg-ground text-ink">
           <TopBar />
-          <div className="flex min-h-0 flex-1">
+          <InfoBar />
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto sm:flex-row sm:overflow-visible">
             <ToolRail />
             <CanvasBoard />
-            <aside className="flex w-[233px] shrink-0 flex-col overflow-y-auto border-l border-line bg-surface">
+            <aside className="flex w-full shrink-0 flex-col border-t border-line bg-surface max-sm:overflow-visible sm:w-[233px] sm:overflow-y-auto sm:border-t-0 sm:border-l">
               <PropertiesPanel />
               <LayersPanel />
             </aside>

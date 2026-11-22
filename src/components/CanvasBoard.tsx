@@ -246,7 +246,7 @@ export default function CanvasBoard() {
   const isBlank = layers.every((l) => !l.dataUrl);
 
   return (
-    <div className="relative min-w-0 flex-1 overflow-auto bg-ground p-[34px]">
+    <div className="relative min-w-0 flex-1 overflow-auto bg-ground p-4 max-sm:h-[440px] max-sm:flex-none sm:p-[34px]">
       <div className="flex min-h-full items-center justify-center">
         <div
           ref={stackRef}

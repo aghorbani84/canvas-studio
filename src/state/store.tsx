@@ -74,6 +74,10 @@ export interface StudioState {
   undoStack: Layer[][];
   redoStack: Layer[][];
   savedAt: string | null;
+  /** Strokes drawn this session (BEGIN_STROKE count; reset by CLEAR_ALL). */
+  strokeCount: number;
+  /** Content edits since the last autosave (SET_SAVED_AT resets to 0). */
+  unsavedChanges: number;
 }
 
 export type StudioAction =
@@ -142,6 +146,8 @@ function initialState(): StudioState {
     undoStack: [],
     redoStack: [],
     savedAt: null,
+    strokeCount: 0,
+    unsavedChanges: 0,
   };
 
   // Restore an autosaved drawing, if one exists.
@@ -205,6 +211,7 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
         ...pushHistory(state),
         layers: [...state.layers, layer],
         activeLayerId: layer.id,
+        unsavedChanges: state.unsavedChanges + 1,
       };
     }
     case "DELETE_LAYER": {
@@ -214,7 +221,13 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
         state.activeLayerId === action.id
           ? layers[layers.length - 1].id
           : state.activeLayerId;
-      return { ...state, ...pushHistory(state), layers, activeLayerId };
+      return {
+        ...state,
+        ...pushHistory(state),
+        layers,
+        activeLayerId,
+        unsavedChanges: state.unsavedChanges + 1,
+      };
     }
     case "TOGGLE_LAYER_VISIBILITY":
       return {
@@ -222,6 +235,7 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
         layers: state.layers.map((l) =>
           l.id === action.id ? { ...l, visible: !l.visible } : l,
         ),
+        unsavedChanges: state.unsavedChanges + 1,
       };
     case "SET_LAYER_OPACITY":
       return {
@@ -231,6 +245,7 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
             ? { ...l, opacity: Math.min(1, Math.max(0, action.opacity)) }
             : l,
         ),
+        unsavedChanges: state.unsavedChanges + 1,
       };
     case "MOVE_LAYER": {
       const index = state.layers.findIndex((l) => l.id === action.id);
@@ -240,7 +255,7 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
       const layers = [...state.layers];
       const [moved] = layers.splice(index, 1);
       layers.splice(target, 0, moved);
-      return { ...state, layers };
+      return { ...state, layers, unsavedChanges: state.unsavedChanges + 1 };
     }
     case "SET_ACTIVE_LAYER":
       return state.layers.some((l) => l.id === action.id)
@@ -250,11 +265,23 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
     case "SET_ZOOM":
       return { ...state, zoom: Math.min(3, Math.max(0.25, action.zoom)) };
     case "SET_CANVAS_SIZE":
-      return { ...state, ...pushHistory(state), canvasSize: action.size };
+      return {
+        ...state,
+        ...pushHistory(state),
+        canvasSize: action.size,
+        unsavedChanges: state.unsavedChanges + 1,
+      };
 
     case "BEGIN_STROKE":
       // Snapshot the layers *before* the stroke so undo restores them.
-      return { ...state, ...pushHistory(state) };
+      // One stroke = one proof count and one unsaved change; the
+      // UPDATE_LAYER_DATA commit at stroke end does not count again.
+      return {
+        ...state,
+        ...pushHistory(state),
+        strokeCount: state.strokeCount + 1,
+        unsavedChanges: state.unsavedChanges + 1,
+      };
     case "UPDATE_LAYER_DATA":
       return {
         ...state,
@@ -272,7 +299,14 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
       const activeLayerId = layers.some((l) => l.id === state.activeLayerId)
         ? state.activeLayerId
         : layers[layers.length - 1].id;
-      return { ...state, layers, activeLayerId, undoStack, redoStack };
+      return {
+        ...state,
+        layers,
+        activeLayerId,
+        undoStack,
+        redoStack,
+        unsavedChanges: state.unsavedChanges + 1,
+      };
     }
     case "REDO": {
       if (state.redoStack.length === 0) return state;
@@ -283,12 +317,25 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
       const activeLayerId = layers.some((l) => l.id === state.activeLayerId)
         ? state.activeLayerId
         : layers[layers.length - 1].id;
-      return { ...state, layers, activeLayerId, undoStack, redoStack };
+      return {
+        ...state,
+        layers,
+        activeLayerId,
+        undoStack,
+        redoStack,
+        unsavedChanges: state.unsavedChanges + 1,
+      };
     }
 
     case "CLEAR_ALL": {
       const blank = state.layers.map((l) => ({ ...l, dataUrl: null }));
-      return { ...state, ...pushHistory(state), layers: blank };
+      return {
+        ...state,
+        ...pushHistory(state),
+        layers: blank,
+        strokeCount: 0,
+        unsavedChanges: state.unsavedChanges + 1,
+      };
     }
     case "RESTORE": {
       const layers = action.layers.filter((l) => l && typeof l.id === "string");
@@ -300,10 +347,13 @@ export function reducer(state: StudioState, action: StudioAction): StudioState {
         canvasSize: action.canvasSize,
         undoStack: [],
         redoStack: [],
+        strokeCount: 0,
+        unsavedChanges: 0,
       };
     }
     case "SET_SAVED_AT":
-      return { ...state, savedAt: action.savedAt };
+      // Autosave persisted the current layers: nothing unsaved remains.
+      return { ...state, savedAt: action.savedAt, unsavedChanges: 0 };
     default:
       return state;
   }

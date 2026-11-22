@@ -12,7 +12,7 @@ export default function ThemeSwitcher() {
   const { style, mode, setStyle, toggleMode } = useTheme();
 
   const segBtn = (active: boolean) =>
-    `flex h-[26px] items-center gap-1.5 rounded-[5px] px-2 text-xs font-medium whitespace-nowrap transition-colors ${
+    `flex h-11 items-center gap-1.5 rounded-[5px] px-2 text-xs font-medium whitespace-nowrap transition-colors sm:h-[26px] ${
       active
         ? "bg-surface text-ink shadow-sm"
         : "text-ink-soft hover:text-ink"
@@ -35,7 +35,7 @@ export default function ThemeSwitcher() {
   return (
     <div className="flex items-center gap-2">
       <div
-        className="flex h-[30px] items-center rounded-md bg-panel p-0.5"
+        className="flex h-12 items-center rounded-md bg-panel p-0.5 sm:h-[30px]"
         role="group"
         aria-label="Visual style"
       >
@@ -48,7 +48,7 @@ export default function ThemeSwitcher() {
         aria-label="Toggle dark mode"
         aria-pressed={mode === "dark"}
         title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-        className="flex h-[30px] w-[30px] items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-panel hover:text-ink"
+        className="flex h-11 w-11 items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-panel hover:text-ink sm:h-[30px] sm:w-[30px]"
       >
         {mode === "dark" ? (
           <Sun size={16} strokeWidth={1.8} />
