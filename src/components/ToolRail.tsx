@@ -47,8 +47,8 @@ export default function ToolRail() {
             onClick={() => dispatch({ type: "SET_TOOL", tool: t.id })}
             className={`flex h-[34px] w-[34px] items-center justify-center rounded-lg transition-all duration-150 ${
               isActive
-                ? "bg-accent text-white shadow-sm"
-                : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
+                ? "bg-accent text-accent-contrast shadow-sm"
+                : "text-ink-soft hover:bg-panel hover:text-ink"
             }`}
           >
             <Icon size={16} strokeWidth={1.8} />

@@ -28,14 +28,14 @@ export default function LayersPanel() {
         <h2 className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-ink-soft uppercase">
           <Layers size={13} strokeWidth={1.8} />
           Layers
-          <span className="rounded-full bg-neutral-100 px-1.5 py-px text-[11px] font-semibold text-ink-soft tabular-nums">
+          <span className="rounded-full bg-panel px-1.5 py-px text-[11px] font-semibold text-ink-soft tabular-nums">
             {state.layers.length}
           </span>
         </h2>
         <button
           type="button"
           onClick={() => dispatch({ type: "ADD_LAYER" })}
-          className="flex h-[26px] items-center gap-1 rounded-md bg-accent px-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-accent-hover"
+          className="flex h-[26px] items-center gap-1 rounded-md bg-accent px-2 text-xs font-medium text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover"
         >
           <Plus size={13} strokeWidth={2} />
           Add
@@ -48,7 +48,7 @@ export default function LayersPanel() {
           const isTop = displayIndex === 0;
           const isBottom = displayIndex === displayLayers.length - 1;
           const rowBtn =
-            "flex h-[22px] w-[22px] items-center justify-center rounded text-ink-faint transition-colors hover:bg-neutral-100 hover:text-ink disabled:opacity-25 disabled:hover:bg-transparent";
+            "flex h-[22px] w-[22px] items-center justify-center rounded text-ink-faint transition-colors hover:bg-panel hover:text-ink disabled:opacity-25 disabled:hover:bg-transparent";
           return (
             <li
               key={layer.id}
@@ -58,7 +58,7 @@ export default function LayersPanel() {
               className={`mb-[5px] cursor-pointer rounded-lg border px-2 py-[8px] transition-all duration-150 ${
                 isActive
                   ? "border-accent-ring bg-accent-soft shadow-sm"
-                  : "border-transparent bg-transparent hover:bg-neutral-50"
+                  : "border-transparent bg-transparent hover:bg-panel"
               }`}
             >
               <div className="flex items-center gap-[8px]">
@@ -74,7 +74,7 @@ export default function LayersPanel() {
                       id: layer.id,
                     });
                   }}
-                  className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded text-ink-soft transition-colors hover:bg-neutral-100 hover:text-ink"
+                  className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded text-ink-soft transition-colors hover:bg-panel hover:text-ink"
                 >
                   {layer.visible ? (
                     <Eye size={15} strokeWidth={1.8} />

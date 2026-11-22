@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { CANVAS_SIZE_PRESETS, useStudio } from "../state/store";
 import { exportAsPng } from "../utils/canvas";
+import ThemeSwitcher from "./ThemeSwitcher";
 
 /**
  * Top bar — the window chrome (40px, Figma-style unified toolbar).
@@ -47,18 +48,70 @@ export default function TopBar() {
   }
 
   const iconBtn =
-    "flex h-[30px] w-[30px] items-center justify-center rounded-md text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-30 disabled:hover:bg-transparent";
-  const divider = "h-5 w-px bg-neutral-200";
+    "flex h-[30px] w-[30px] items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-panel hover:text-ink disabled:opacity-30 disabled:hover:bg-transparent";
+  const divider = "h-5 w-px bg-line";
 
   return (
     <>
-      <header className="flex h-10 shrink-0 items-center gap-[13px] border-b border-line bg-surface px-[13px] text-ink">
-        {/* Wordmark — plain text, no invented logo */}
+      <header className="app-header relative flex h-10 shrink-0 items-center gap-[13px] border-b border-line bg-surface px-[13px] text-ink">
+        {/* Achaemenid only: subtle lotus-petal pattern behind the header */}
+        <svg
+          aria-hidden="true"
+          className="achaemenid-pattern pointer-events-none absolute inset-0 h-full w-full text-line opacity-40"
+        >
+          <defs>
+            <pattern
+              id="cs-lotus"
+              width="26"
+              height="26"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M13 5 C16.5 10 16.5 15 13 20 C9.5 15 9.5 10 13 5 Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+              />
+              <path
+                d="M4 13 H9 M17 13 H22"
+                stroke="currentColor"
+                strokeWidth="1"
+              />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#cs-lotus)" />
+        </svg>
+        {/* Wordmark — display font (Cinzel in Achaemenid, Inter in Modern) */}
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold tracking-tight">
+          {/* Achaemenid only: one small Faravahar accent, gold on transparent */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 32 32"
+            className="faravahar-accent h-7 w-7 shrink-0 text-accent"
+          >
+            <circle cx="16" cy="12" r="2.4" fill="currentColor" />
+            <circle
+              cx="16"
+              cy="12"
+              r="4.2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.1"
+            />
+            <rect x="2.5" y="7.5" width="9" height="2" rx="1" fill="currentColor" />
+            <rect x="4.5" y="11" width="7" height="2" rx="1" fill="currentColor" />
+            <rect x="6.5" y="14.5" width="5" height="2" rx="1" fill="currentColor" />
+            <rect x="20.5" y="7.5" width="9" height="2" rx="1" fill="currentColor" />
+            <rect x="20.5" y="11" width="7" height="2" rx="1" fill="currentColor" />
+            <rect x="20.5" y="14.5" width="5" height="2" rx="1" fill="currentColor" />
+            <rect x="13" y="18.5" width="1.8" height="7" rx="0.9" fill="currentColor" />
+            <rect x="16.1" y="18.5" width="1.8" height="8.5" rx="0.9" fill="currentColor" />
+            <rect x="19.2" y="18.5" width="1.8" height="7" rx="0.9" fill="currentColor" />
+          </svg>
+          <span className="font-display text-[13px] font-semibold tracking-tight">
             Canvas Studio
           </span>
-          <span className="rounded-md bg-accent-soft px-1.5 py-0.5 text-[11px] font-semibold text-accent">
+          <span className="rounded-md bg-secondary-soft px-1.5 py-0.5 text-[11px] font-semibold text-secondary-strong">
             React + Canvas
           </span>
         </div>
@@ -120,7 +173,7 @@ export default function TopBar() {
 
         {/* Zoom — segmented control */}
         <div
-          className="flex h-[30px] items-center rounded-md bg-neutral-100 p-0.5"
+          className="flex h-[30px] items-center rounded-md bg-panel p-0.5"
           aria-label="Zoom"
         >
           <button
@@ -129,7 +182,7 @@ export default function TopBar() {
             onClick={() =>
               dispatch({ type: "SET_ZOOM", zoom: state.zoom - 0.25 })
             }
-            className="flex h-full w-7 items-center justify-center rounded-[5px] text-neutral-600 transition-colors hover:bg-white hover:text-neutral-900 hover:shadow-sm"
+            className="flex h-full w-7 items-center justify-center rounded-[5px] text-ink-soft transition-colors hover:bg-surface hover:text-ink hover:shadow-sm"
           >
             <ZoomOut size={15} strokeWidth={1.8} />
           </button>
@@ -137,7 +190,7 @@ export default function TopBar() {
             type="button"
             title="Reset zoom to 100%"
             onClick={() => dispatch({ type: "SET_ZOOM", zoom: 1 })}
-            className="w-[52px] rounded-[5px] px-1 py-1 text-center text-xs font-medium text-ink tabular-nums transition-colors hover:bg-white hover:shadow-sm"
+            className="w-[52px] rounded-[5px] px-1 py-1 text-center text-xs font-medium text-ink tabular-nums transition-colors hover:bg-surface hover:shadow-sm"
           >
             {Math.round(state.zoom * 100)}%
           </button>
@@ -147,11 +200,14 @@ export default function TopBar() {
             onClick={() =>
               dispatch({ type: "SET_ZOOM", zoom: state.zoom + 0.25 })
             }
-            className="flex h-full w-7 items-center justify-center rounded-[5px] text-neutral-600 transition-colors hover:bg-white hover:text-neutral-900 hover:shadow-sm"
+            className="flex h-full w-7 items-center justify-center rounded-[5px] text-ink-soft transition-colors hover:bg-surface hover:text-ink hover:shadow-sm"
           >
             <ZoomIn size={15} strokeWidth={1.8} />
           </button>
         </div>
+
+        {/* Theme switcher — style + mode, always visible */}
+        <ThemeSwitcher />
 
         {/* Actions */}
         <div className="ml-auto flex items-center gap-2">
@@ -167,7 +223,7 @@ export default function TopBar() {
             type="button"
             onClick={handleExport}
             disabled={exporting}
-            className="flex h-[30px] items-center gap-1.5 rounded-md bg-accent px-3 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="flex h-[30px] items-center gap-1.5 rounded-md bg-accent px-3 text-[13px] font-medium text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             <Download size={15} strokeWidth={1.8} />
             {exporting ? "Exporting…" : "Export PNG"}
@@ -175,18 +231,21 @@ export default function TopBar() {
         </div>
       </header>
 
+      {/* Achaemenid only: thin double gold rule under the header */}
+      <div aria-hidden="true" className="double-gold-rule shrink-0" />
+
       {/* Export error — floating toast, not a full-width band */}
       {exportError && (
         <div
           role="alert"
-          className="fixed right-[21px] bottom-[41px] z-50 flex items-center gap-2 rounded-lg bg-neutral-900 px-3 py-2 text-[13px] text-white shadow-lg"
+          className="fixed right-[21px] bottom-[41px] z-50 flex items-center gap-2 rounded-lg bg-ink px-3 py-2 text-[13px] text-surface shadow-lg"
         >
           {exportError}
           <button
             type="button"
             onClick={() => setExportError(null)}
             aria-label="Dismiss"
-            className="flex items-center rounded px-1 py-0.5 text-neutral-300 hover:text-white"
+            className="flex items-center rounded px-1 py-0.5 text-ink-soft hover:text-surface"
           >
             <X size={14} strokeWidth={1.8} />
           </button>

@@ -1,10 +1,28 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStudio } from "../state/store";
+import { THEME_CHANGE_EVENT } from "../theme";
 import { floodFill, restoreLayerToCanvas } from "../utils/canvas";
 
 interface Point {
   x: number;
   y: number;
+}
+
+interface CanvasTheme {
+  /** Sheet (paper) background for the active combo. */
+  sheetBg: string;
+  /** Default ink color for the active combo. */
+  ink: string;
+}
+
+/** Read the canvas colors from the live computed CSS variables, so the
+ *  sheet and default ink always follow the active theme combo. */
+function readCanvasTheme(): CanvasTheme {
+  const cs = getComputedStyle(document.documentElement);
+  return {
+    sheetBg: cs.getPropertyValue("--canvas-bg").trim() || "#ffffff",
+    ink: cs.getPropertyValue("--canvas-ink").trim() || "#0f172a",
+  };
 }
 
 export default function CanvasBoard() {
@@ -21,10 +39,41 @@ export default function CanvasBoard() {
     last: Point;
   } | null>(null);
 
+  // Theme-driven canvas colors, read from computed CSS vars.
+  const [canvasTheme, setCanvasTheme] = useState<CanvasTheme>(readCanvasTheme);
+  const [themeVersion, setThemeVersion] = useState(0);
+  const colorRef = useRef(color);
+  const prevInkRef = useRef<string | null>(null);
+  useEffect(() => {
+    colorRef.current = color;
+  });
+
+  /* On theme change: re-read the computed colors, redraw every layer,
+     and remap the brush only when it is still the theme default ink
+     (plain #000000 or the previous combo's ink) — a color the user
+     picked deliberately is never touched. */
+  useEffect(() => {
+    prevInkRef.current = readCanvasTheme().ink;
+    function onThemeChange() {
+      const next = readCanvasTheme();
+      const prevInk = prevInkRef.current ?? next.ink;
+      const current = colorRef.current.toLowerCase();
+      setCanvasTheme(next);
+      setThemeVersion((v) => v + 1);
+      if (current === "#000000" || current === prevInk.toLowerCase()) {
+        dispatch({ type: "SET_COLOR", color: next.ink });
+      }
+      prevInkRef.current = next.ink;
+    }
+    window.addEventListener(THEME_CHANGE_EVENT, onThemeChange);
+    return () => window.removeEventListener(THEME_CHANGE_EVENT, onThemeChange);
+  }, [dispatch]);
+
   const activeLayer = layers.find((l) => l.id === activeLayerId) ?? layers[0];
 
   /* Redraw every layer canvas from its stored snapshot whenever the layer
-     data, size, or stack changes (undo/redo, restore, clear, resize). */
+     data, size, or stack changes (undo/redo, restore, clear, resize) —
+     and whenever the theme changes, so artwork follows the active combo. */
   useEffect(() => {
     const jobs: Array<Promise<void>> = [];
     for (const layer of layers) {
@@ -32,7 +81,7 @@ export default function CanvasBoard() {
       if (canvas) jobs.push(restoreLayerToCanvas(canvas, layer.dataUrl));
     }
     void Promise.all(jobs);
-  }, [layers, canvasSize]);
+  }, [layers, canvasSize, themeVersion]);
 
   function pointerPosition(e: React.PointerEvent): Point {
     const rect = stackRef.current?.getBoundingClientRect();
@@ -201,10 +250,14 @@ export default function CanvasBoard() {
       <div className="flex min-h-full items-center justify-center">
         <div
           ref={stackRef}
-          className="relative shrink-0 touch-none rounded-[4px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.08)] ring-1 ring-black/5 select-none"
+          className="relative shrink-0 touch-none rounded-[4px] shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.08)] ring-1 ring-line select-none"
           style={{
             width: canvasSize.width * zoom,
             height: canvasSize.height * zoom,
+            backgroundColor: canvasTheme.sheetBg,
+            backgroundImage:
+              "radial-gradient(color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1.4px)",
+            backgroundSize: "22px 22px",
           }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -241,17 +294,17 @@ export default function CanvasBoard() {
           {/* Empty state — a quiet invitation, never in the way of drawing */}
           {isBlank && activeLayer?.visible && (
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-[5px] text-center">
-              <p className="text-[21px] leading-tight font-semibold tracking-tight text-neutral-300">
+              <p className="font-display text-[21px] leading-tight font-semibold tracking-tight text-ink-faint">
                 Start drawing
               </p>
-              <p className="text-[13px] text-neutral-400">
+              <p className="text-[13px] text-ink-soft">
                 Pick a tool on the left and draw on the canvas
               </p>
             </div>
           )}
           {!activeLayer?.visible && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="rounded-full bg-neutral-900/85 px-3 py-1.5 text-[13px] font-medium text-white shadow-lg">
+              <p className="rounded-full bg-ink/85 px-3 py-1.5 text-[13px] font-medium text-surface shadow-lg">
                 The active layer is hidden — make it visible to draw on it.
               </p>
             </div>
@@ -260,7 +313,7 @@ export default function CanvasBoard() {
       </div>
       {/* Sheet readout — size and zoom, floating over the ground */}
       <div className="pointer-events-none sticky bottom-0 left-0 z-10 -mt-7 flex">
-        <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-ink-soft tabular-nums shadow-sm ring-1 ring-black/5 backdrop-blur">
+        <span className="rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-medium text-ink-soft tabular-nums shadow-sm ring-1 ring-line backdrop-blur">
           {canvasSize.width} × {canvasSize.height} · {Math.round(zoom * 100)}%
         </span>
       </div>

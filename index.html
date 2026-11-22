@@ -5,6 +5,30 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Canvas Studio — Browser Drawing App</title>
+    <!-- Cinzel (Achaemenid display) + Inter (Modern) — the only new network call -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Apply the saved theme before first paint (no white flash) -->
+    <script>
+      (function () {
+        try {
+          var s = localStorage.getItem("showcase-style") || "modern";
+          var m =
+            localStorage.getItem("showcase-mode") ||
+            (window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light");
+          document.documentElement.setAttribute("data-style", s);
+          document.documentElement.setAttribute("data-mode", m);
+        } catch (e) {
+          /* Storage unavailable: CSS defaults (Modern light) apply. */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

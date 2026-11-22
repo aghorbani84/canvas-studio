@@ -5,6 +5,7 @@ import PropertiesPanel from "./components/PropertiesPanel";
 import ToolRail from "./components/ToolRail";
 import TopBar from "./components/TopBar";
 import { AUTOSAVE_KEY, StudioProvider, useStudio } from "./state/store";
+import { ThemeProvider } from "./theme";
 
 function Autosave() {
   const { state, dispatch } = useStudio();
@@ -81,22 +82,24 @@ function StatusBar() {
 
 export default function App() {
   return (
-    <StudioProvider>
-      <Autosave />
-      <KeyboardShortcuts />
-      {/* Figma anatomy: top chrome, left tool rail, canvas hero, right pane */}
-      <div className="flex h-full flex-col bg-ground text-ink">
-        <TopBar />
-        <div className="flex min-h-0 flex-1">
-          <ToolRail />
-          <CanvasBoard />
-          <aside className="flex w-[233px] shrink-0 flex-col overflow-y-auto border-l border-line bg-surface">
-            <PropertiesPanel />
-            <LayersPanel />
-          </aside>
+    <ThemeProvider>
+      <StudioProvider>
+        <Autosave />
+        <KeyboardShortcuts />
+        {/* Figma anatomy: top chrome, left tool rail, canvas hero, right pane */}
+        <div className="flex h-full flex-col bg-ground text-ink">
+          <TopBar />
+          <div className="flex min-h-0 flex-1">
+            <ToolRail />
+            <CanvasBoard />
+            <aside className="flex w-[233px] shrink-0 flex-col overflow-y-auto border-l border-line bg-surface">
+              <PropertiesPanel />
+              <LayersPanel />
+            </aside>
+          </div>
+          <StatusBar />
         </div>
-        <StatusBar />
-      </div>
-    </StudioProvider>
+      </StudioProvider>
+    </ThemeProvider>
   );
 }

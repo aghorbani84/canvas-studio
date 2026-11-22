@@ -51,7 +51,7 @@ export default function PropertiesPanel() {
               }}
               className={`h-5 w-5 rounded-md transition-transform duration-150 hover:scale-110 ${
                 state.color === c
-                  ? "ring-2 ring-accent ring-offset-1 ring-offset-white"
+                  ? "ring-2 ring-accent ring-offset-1 ring-offset-surface"
                   : "ring-1 ring-black/10"
               }`}
               style={{ backgroundColor: c }}
